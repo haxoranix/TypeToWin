@@ -168,7 +168,7 @@
           <option value="hard">Hard</option>
           <option value="endless">Endless+ (fast)</option>
         </select>
-        <span class="tag">Press <span class="kbd">P</span> to pause</span>
+<span class="tag">Press <span class="kbd">Esc</span> to pause</span>
       </div>
       <div class="cluster" aria-live="polite">
         <div class="stat"><small>Score</small><span id="score">0</span></div>
@@ -570,9 +570,20 @@ about above across act add after again air all also always among amount and answ
     input.addEventListener('keydown', (e)=>{
       if(e.key==='Enter'){ e.preventDefault(); commitBestMatch(); }
     });
-    document.addEventListener('keydown',(e)=>{
-      if(e.key==='p' || e.key==='P'){ togglePause(); }
-    });
+    document.addEventListener('keydown', (e) => {
+  const typing = document.activeElement === document.getElementById('input');
+  // Always allow Esc to toggle pause
+  if (e.key === 'Escape') {
+    e.preventDefault();
+    togglePause();
+    return;
+  }
+  // Only allow P to toggle when NOT typing in the input, and not with modifiers
+  if ((e.key === 'p' || e.key === 'P') && !typing && !e.ctrlKey && !e.metaKey && !e.altKey) {
+    e.preventDefault();
+    togglePause();
+  }
+});
 
     startBtn.addEventListener('click', startGame);
     bigStart.addEventListener('click', startGame);
