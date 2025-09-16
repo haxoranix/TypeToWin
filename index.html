@@ -1,0 +1,598 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <!-- Basic SEO -->
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Type-to-Win — Best Free Typing Game to Increase Typing Speed & Accuracy</title>
+  <meta name="description" content="Play Type-to-Win, a fast, free typing game. Type the falling words before they hit the ground to boost typing speed, accuracy, and reaction time. One of the best typing games online." />
+  <meta name="keywords" content="typing game, best typing game, typing speed game, typing test game, typing practice game, type speed increase game, free typing game online, fast typing game, keyboard practice game" />
+  <link rel="canonical" href="." />
+
+  <!-- Open Graph / Twitter -->
+  <meta property="og:type" content="website" />
+  <meta property="og:title" content="Type-to-Win — Best Free Typing Game" />
+  <meta property="og:description" content="Boost your typing speed and accuracy with this free online typing game. Type fast, keep your streak, and climb the levels." />
+  <meta property="og:image" content="https://dummyimage.com/1200x630/0f1220/e8ecf1.png&text=Type-to-Win" />
+  <meta name="twitter:card" content="summary_large_image" />
+
+  <!-- Web App niceties -->
+  <meta name="theme-color" content="#0f1220" />
+
+  <!-- Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@600;700&family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+
+  <style>
+    :root{
+      --bg:#0e0f13;
+      --panel:#151823;
+      --text:#e8ecf1;
+      --muted:#9aa5b1;
+      --accent:#66e3ff;
+      --good:#6de39d;
+      --bad:#ff5d7a;
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{
+      margin:0;
+      font-family:'Poppins',system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,Cantarell,'Helvetica Neue',Arial,'Noto Sans',sans-serif;
+      background:linear-gradient(180deg,#0b0c10 0%, #0f1220 100%);
+      color:var(--text);
+      display:flex; flex-direction:column; align-items:center;
+    }
+    .wrap{
+      width:min(100vw,980px);
+      display:grid; grid-template-rows:auto min(70vh,720px) auto; gap:12px;
+      padding:16px; margin-top:6px;
+    }
+    header, footer{
+      display:flex; align-items:center; justify-content:space-between; gap:10px; flex-wrap:wrap;
+      background:rgba(255,255,255,0.03);
+      border:1px solid rgba(255,255,255,0.06);
+      border-radius:14px; padding:10px 14px; backdrop-filter: blur(6px);
+    }
+    header .brand{
+      font-family:'Orbitron',sans-serif; font-weight:700; letter-spacing:.5px;
+      background:linear-gradient(90deg,#66e3ff,#6de39d);
+      -webkit-background-clip:text; background-clip:text; color:transparent;
+      font-size:20px;
+    }
+    .cluster{display:flex; align-items:center; gap:10px; flex-wrap:wrap}
+    .stat{font-variant-numeric:tabular-nums; text-align:center}
+    .stat small{display:block; color:var(--muted); font-size:12px}
+    .btn{
+      appearance:none; border:1px solid rgba(255,255,255,0.14); background:var(--panel);
+      padding:8px 12px; border-radius:10px; color:var(--text); cursor:pointer;
+      transition:transform .05s ease, background .2s ease, border-color .2s ease;
+      font-weight:700; font-family:'Poppins',sans-serif;
+    }
+    .btn:hover{transform:translateY(-1px)}
+    .btn.primary{background:var(--accent); color:#0b0c10; border-color:transparent}
+    .btn.ghost{background:transparent}
+    .select, .input{
+      border:1px solid rgba(255,255,255,0.14); background:var(--panel);
+      color:var(--text); border-radius:10px; padding:8px 12px; font-weight:600;
+    }
+    #game{
+      position:relative; overflow:hidden;
+      background:
+        radial-gradient(1200px 500px at 50% -400px, rgba(102,227,255,0.08), transparent),
+        linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
+      border:1px solid rgba(255,255,255,0.08); border-radius:16px;
+    }
+    .ground{
+      position:absolute; left:0; right:0; bottom:0; height:10px;
+      background:linear-gradient(180deg, rgba(255,255,255,0.08), rgba(255,255,255,0.0));
+      border-top:1px dashed rgba(255,255,255,0.25);
+      pointer-events:none;
+    }
+    .word{
+      position:absolute; padding:6px 10px; border-radius:999px; font-weight:700;
+      white-space:nowrap; transform:translate(-50%,0);
+      background:rgba(255,255,255,0.08); border:1px solid rgba(255,255,255,0.15);
+      box-shadow:0 6px 14px rgba(0,0,0,0.2);
+      transition:filter .15s ease;
+      will-change: transform;
+      font-family:'Poppins',sans-serif;
+    }
+    .word .done{color:var(--good)}
+    .word .todo{opacity:.9}
+    .word.hit{filter:drop-shadow(0 0 20px rgba(255,93,122,.35))}
+    .flash{animation:flash .4s ease}
+    @keyframes flash { from{background:rgba(255,93,122,.2)} to{background:transparent} }
+    .overlay{
+      position:absolute; inset:0; display:flex; align-items:center; justify-content:center;
+      pointer-events:none;
+    }
+    .panel{
+      pointer-events:auto;
+      width:min(560px,94%); background:var(--panel);
+      border:1px solid rgba(255,255,255,0.12); border-radius:16px; padding:18px;
+      box-shadow:0 30px 80px rgba(0,0,0,.35)
+    }
+    .panel h1{margin:.2em 0 .2em; font-size:28px; font-family:'Orbitron',sans-serif}
+    .panel p{color:var(--muted); margin:.25em 0 .75em}
+    .grid{display:grid; grid-template-columns:1fr 1fr; gap:10px}
+    .kbd{font-family:ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace; background:#0c0d12; border:1px solid rgba(255,255,255,0.15); padding:2px 6px; border-radius:6px}
+    footer{gap:10px}
+    #typebox{
+      flex:1; display:flex; gap:10px; align-items:center;
+      background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.08); border-radius:12px; padding:8px 10px;
+    }
+    #input{
+      flex:1; background:transparent; border:0; outline:none; color:var(--text);
+      font-size:16px; caret-color:var(--accent);
+    }
+    #input.invalid{animation:shake .15s ease}
+    @keyframes shake{ 20%{transform:translateX(-2px)} 60%{transform:translateX(2px)} 100%{transform:translateX(0)} }
+    .hint{color:var(--muted); font-size:12px}
+    .tag{font-size:12px; color:var(--muted); padding:4px 8px; border:1px solid rgba(255,255,255,0.12); border-radius:999px}
+    .hidden{display:none}
+    a{color:var(--accent); text-decoration:none}
+    a:hover{text-decoration:underline}
+
+    /* SEO section + ad slot */
+    #adsense-slot{margin:16px 0; text-align:center; background:#111; padding:20px; border-radius:10px; border:1px dashed rgba(255,255,255,.12)}
+    #seo-content{max-width:980px; padding:24px 16px 36px; text-align:left; line-height:1.7; font-size:16px}
+    #seo-content h2,#seo-content h3{font-family:'Orbitron',sans-serif}
+    #seo-content ul{margin:0 0 1em 1.25em}
+  </style>
+
+  <!-- Schema.org (Game) -->
+  <script type="application/ld+json">
+  {
+    "@context":"https://schema.org",
+    "@type":"VideoGame",
+    "name":"Type-to-Win",
+    "applicationCategory":"Game",
+    "gamePlatform":"Web",
+    "playMode":"SinglePlayer",
+    "genre":["Typing","Arcade","Educational"],
+    "description":"A free, browser-based typing game where you type falling words to increase typing speed and accuracy.",
+    "url":"./",
+    "inLanguage":"en"
+  }
+  </script>
+</head>
+<body>
+  <div class="wrap" role="application" aria-label="Type-to-Win game">
+    <header>
+      <div class="cluster">
+        <span class="brand">TYPE-TO-WIN</span>
+        <button id="startBtn" class="btn primary">Start</button>
+        <button id="pauseBtn" class="btn ghost" disabled>Pause</button>
+        <select id="difficulty" class="select" aria-label="Difficulty">
+          <option value="easy">Easy</option>
+          <option value="normal" selected>Normal</option>
+          <option value="hard">Hard</option>
+          <option value="endless">Endless+ (fast)</option>
+        </select>
+        <span class="tag">Press <span class="kbd">P</span> to pause</span>
+      </div>
+      <div class="cluster" aria-live="polite">
+        <div class="stat"><small>Score</small><span id="score">0</span></div>
+        <div class="stat"><small>Streak</small><span id="streak">0</span></div>
+        <div class="stat"><small>Accuracy</small><span id="acc">100%</span></div>
+        <div class="stat"><small>Level</small><span id="level">1</span></div>
+        <button id="muteBtn" class="btn ghost" aria-pressed="true" aria-label="Toggle sound">🔇</button>
+      </div>
+    </header>
+
+    <main id="game" tabindex="-1" aria-label="Playfield">
+      <div class="ground" aria-hidden="true"></div>
+      <div class="overlay" id="startOverlay">
+        <div class="panel">
+          <h1>Type-to-Win</h1>
+          <p>Type falling words before they hit the ground. Clear a word by typing it completely. Speed ramps up as you level.</p>
+          <div class="grid">
+            <div>
+              <strong>Controls</strong>
+              <p><span class="kbd">Letters</span> type • <span class="kbd">Backspace</span> edit • <span class="kbd">Enter</span> submit nearest match • <span class="kbd">P</span> pause</p>
+            </div>
+            <div>
+              <strong>Tips</strong>
+              <p>Partial matches highlight. Aim for the lowest/nearest word first. Keep your streak for bonus points.</p>
+            </div>
+          </div>
+          <button class="btn primary" id="bigStart">Start Game</button>
+        </div>
+      </div>
+
+      <div class="overlay hidden" id="pauseOverlay">
+        <div class="panel">
+          <h1>Paused</h1>
+          <p>Stretch those fingers. Press <span class="kbd">P</span> or click resume to continue.</p>
+          <button class="btn" id="resumeBtn">Resume</button>
+        </div>
+      </div>
+
+      <div class="overlay hidden" id="gameOverOverlay" aria-live="assertive">
+        <div class="panel">
+          <h1>Game Over</h1>
+          <p id="summary"></p>
+          <div style="display:flex; gap:10px; flex-wrap:wrap">
+            <button class="btn primary" id="restartBtn">Play Again</button>
+            <button class="btn ghost" id="tweetBtn">Share</button>
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <footer>
+      <div id="typebox" aria-label="Typing input">
+        <span class="hint">Type here:</span>
+        <input id="input" class="input" autocomplete="off" spellcheck="false" aria-label="Type the falling words" />
+      </div>
+      <div class="hint">Mobile: tap the input to show the keyboard. The game auto-focuses it after you start.</div>
+    </footer>
+
+    <!-- AD SENSE PLACEHOLDER (paste your script inside this div) -->
+    <div id="adsense-slot">
+      <!-- Example:
+      <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=YOUR_ID" crossorigin="anonymous"></script>
+      <ins class="adsbygoogle" style="display:block" data-ad-client="YOUR_ID" data-ad-slot="SLOT_ID" data-ad-format="auto" data-full-width-responsive="true"></ins>
+      <script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
+      -->
+      <p style="color:#777;margin:0">[AdSense ad will appear here]</p>
+    </div>
+  </div>
+
+  <!-- SEO CONTENT -->
+  <section id="seo-content">
+    <h2>Type-to-Win: The Best Free Typing Game to Improve Your Speed</h2>
+    <p>
+      Looking for a <strong>typing game</strong> that is fast, challenging, and fun? Type-to-Win is a free browser-based
+      <em>typing practice game</em> designed to push your speed and accuracy at the same time. Instead of a static
+      typing speed test, this arcade-style challenge makes words fall from the top of the screen. Your mission is
+      to type each word before it reaches the ground. Keep a streak to earn bonus points, climb levels, and sharpen
+      your reflexes. Whether you want to prepare for school or boost productivity at work, this is one of the
+      <strong>best typing games online</strong> for real skill improvement.
+    </p>
+    <h3>Why this typing speed game works</h3>
+    <p>
+      Traditional tests measure your WPM, but they don’t train real-time decision-making. Type-to-Win does both.
+      You must scan the playfield, pick the most urgent word, and type quickly without mistakes. That combination
+      improves finger memory, eye-hand coordination, and focus. With regular play, you’ll notice faster
+      <strong>words per minute</strong>, fewer typos, and more confidence on the keyboard. Many players use it as a
+      warm-up before writing or coding sessions because it’s a quick way to get into a flow state.
+    </p>
+    <h3>Simple rules, deep mastery</h3>
+    <ul>
+      <li>Type the falling words before they hit the ground.</li>
+      <li>Press <kbd>Enter</kbd> to confirm the word you’re targeting.</li>
+      <li>Maintain a streak for bonus points and higher scores.</li>
+      <li>Levels increase difficulty with faster spawns and speed.</li>
+      <li>Missing a word ends the round—accuracy matters!</li>
+    </ul>
+    <p>
+      Choose from Easy, Normal, Hard, or Endless+ depending on your comfort level. The game gradually ramps up,
+      so beginners can practice steadily while advanced typists chase high scores. If you searched for
+      “<strong>best typing game</strong>,” “<strong>typing speed game</strong>,” “<strong>typing test game</strong>,” or
+      “<strong>best type speed increase game</strong>,” you’re in the right place—this blends the best parts of a typing
+      test with the excitement of an arcade challenge.
+    </p>
+    <h3>Tips for improving faster</h3>
+    <p>
+      Keep your eyes on the lowest word, use <kbd>Enter</kbd> to commit quickly, and avoid over-correcting. Short
+      daily sessions work best for building lasting skill. Within a week of consistent play, most people see a
+      noticeable bump in typing speed and accuracy. For classrooms or teams, this <em>typing practice game</em> is a
+      great way to run friendly competitions and track personal progress.
+    </p>
+    <p>
+      Start playing now and see why Type-to-Win is recommended as one of the <strong>best typing games</strong> to
+      improve speed, accuracy, and reaction time—completely free, right in your browser.
+    </p>
+  </section>
+
+  <script>
+  (() => {
+    /*** Utility ***/
+    const clamp = (v,min,max)=>Math.max(min,Math.min(max,v));
+    const rand = (a,b)=>Math.random()*(b-a)+a;
+    const choice = arr => arr[(Math.random()*arr.length)|0];
+
+    /*** Word list ***/
+    const WORDS = `
+about above across act add after again air all also always among amount and answer any area around ask at away back be because become before begin behind best better between big book both boy bring build but by call can change child city class close cold come company could country course cut day decide develop did different do does door down during each early earth end enough even example eye face fact family far feel few find first follow food for form found four free friend from full future game get give go good great group grow half hand happen happy hard have he head hear help her here high him his home house how idea if important in include interest it item job join just keep kind know land large last late later learn leave left less let life light like line list little live long look made make man many mark may me mean measure meet men might mile miss more most mother move much must my name near need never new next night no not note number of off often old on once one only open or order other our out over own page paper part people picture place plan play point power put question quick read really right river run same saw say school sea second see seem self sentence set she should show side simple since small so some something sometimes song soon sound south special spell start state still story study such take talk tell than that the their them then there these they thing think this those thought three through time to together took tree try turn two under until up us use usually very want war water way we well went were what when where which while white who why will with without word work world would write year you young your brave cloud crisp dream drift flash foam forge glaze gleam glint gust haste hush jolt keen leap lilt mint nimble notch pluck quill quick quiet quilt quest rift roam rust sage swift twine tuck vivid wisp zest`.trim().split(/\s+/);
+
+    /*** DOM ***/
+    const el = id => document.getElementById(id);
+    const game = el('game');
+    const input = el('input');
+    const scoreEl = el('score');
+    const streakEl = el('streak');
+    const accEl = el('acc');
+    const levelEl = el('level');
+    const startBtn = el('startBtn');
+    const pauseBtn = el('pauseBtn');
+    const difficultySel = el('difficulty');
+    const startOverlay = el('startOverlay');
+    const pauseOverlay = el('pauseOverlay');
+    const gameOverOverlay = el('gameOverOverlay');
+    const bigStart = el('bigStart');
+    const resumeBtn = el('resumeBtn');
+    const restartBtn = el('restartBtn');
+    const tweetBtn = el('tweetBtn');
+    const summaryEl = el('summary');
+    const muteBtn = el('muteBtn');
+
+    /*** Sound ***/
+    // Lightweight, royalty-free SFX (Google Actions sound library)
+    const sound = {
+      success: new Audio("https://actions.google.com/sounds/v1/cartoon/clang_and_wobble.ogg"),
+      fail:    new Audio("https://actions.google.com/sounds/v1/cartoon/wood_plank_flicks.ogg"),
+      bg:      new Audio("https://actions.google.com/sounds/v1/ambiences/woodland_ambience.ogg")
+    };
+    sound.bg.loop = true;
+    sound.bg.volume = 0.18;
+    sound.success.volume = 0.6;
+    sound.fail.volume = 0.45;
+
+    let audioEnabled = false; // comply with autoplay policies (enabled on first user action)
+
+    function enableAudioIfNeeded(){
+      if(!audioEnabled){
+        audioEnabled = true;
+        muteBtn.setAttribute('aria-pressed','false');
+        muteBtn.textContent = '🔊';
+        try { sound.bg.currentTime=0; sound.bg.play(); } catch(e){}
+      }
+    }
+    function muteToggle(){
+      if(!audioEnabled){ // enabling
+        audioEnabled = true;
+        muteBtn.setAttribute('aria-pressed','false'); muteBtn.textContent='🔊';
+        try { sound.bg.play(); } catch(e){}
+        return;
+      }
+      if(sound.bg.muted){
+        sound.bg.muted = false; sound.success.muted=false; sound.fail.muted=false;
+        muteBtn.setAttribute('aria-pressed','false'); muteBtn.textContent='🔊';
+      }else{
+        sound.bg.muted = true; sound.success.muted=true; sound.fail.muted=true;
+        muteBtn.setAttribute('aria-pressed','true'); muteBtn.textContent='🔇';
+      }
+    }
+    function sfxSuccess(){ if(audioEnabled && !sound.success.muted){ try{ sound.success.currentTime=0; sound.success.play(); }catch(e){} } }
+    function sfxFail(){ if(audioEnabled && !sound.fail.muted){ try{ sound.fail.currentTime=0; sound.fail.play(); }catch(e){} } }
+
+    /*** Game state ***/
+    let running=false, paused=false, raf=0, last=0;
+    let words=[]; // {id, text, x, y, speed, done}
+    let spawnTimer=0, spawnEvery=1400; // ms, will ramp
+    let baseSpeed=45; // px/s, ramps up
+    let score=0, streak=0, hits=0, total=0, level=1;
+    let groundY; // available height minus ground
+    let idCounter=0;
+
+    const DIFFICULTY = {
+      easy:{spawn:1400, speed:38},
+      normal:{spawn:1100, speed:48},
+      hard:{spawn:800,  speed:62},
+      endless:{spawn:700, speed:80}
+    };
+
+    function reset(){
+      words.forEach(w=>w.node?.remove());
+      words.length=0;
+      spawnTimer=0;
+      const d=DIFFICULTY[difficultySel.value]||DIFFICULTY.normal;
+      spawnEvery=d.spawn; baseSpeed=d.speed;
+      score=0; streak=0; hits=0; total=0; level=1;
+      updateHUD();
+      measureGround();
+      input.value='';
+    }
+
+    function measureGround(){
+      const r=game.getBoundingClientRect();
+      const ground = game.querySelector('.ground');
+      groundY = r.height - ground.offsetHeight - 4; // little padding
+    }
+
+    /*** Words ***/
+    function spawnWord(){
+      const maxLen = clamp(3 + Math.floor(level*0.7), 3, 10);
+      const pool = WORDS.filter(w => w.length<=maxLen);
+      const text = pool.length? choice(pool) : choice(WORDS);
+      const x = rand(12, game.clientWidth-12);
+      const speed = baseSpeed + level*2 + rand(-3,6);
+      const y = -20;
+      const id = ++idCounter;
+
+      const node = document.createElement('div');
+      node.className='word';
+      node.setAttribute('role','text');
+      node.innerHTML = `<span class="done"></span><span class="todo"></span>`;
+      const done = node.querySelector('.done');
+      const todo = node.querySelector('.todo');
+      todo.textContent=text;
+      node.style.transform=`translate(${x}px, ${y}px)`;
+      game.appendChild(node);
+
+      const obj = {id,text,x,y,speed,done:0,node,doneEl:done,todoEl:todo};
+      words.push(obj);
+    }
+
+    function removeWord(obj, cleared){
+      obj.node.classList.add('hit');
+      setTimeout(()=>obj.node.remove(), 120);
+      words = words.filter(w=>w.id!==obj.id);
+      if(cleared){
+        score += 10 + Math.floor(level*1.2) + Math.min(20, streak);
+        hits++; streak++;
+        sfxSuccess(); // play success sound
+      }
+      updateHUD();
+    }
+
+    function updateHUD(){
+      scoreEl.textContent=score;
+      streakEl.textContent=streak;
+      const acc = total? Math.round((hits/total)*100) : 100;
+      accEl.textContent = acc+'%';
+      levelEl.textContent=level;
+    }
+
+    /*** Input logic ***/
+    function evaluateInput(){
+      const raw = input.value.trim().toLowerCase();
+      total = Math.max(total, hits + (raw?1:0));
+      if(!raw){
+        input.classList.remove('invalid');
+        highlightMatches('');
+        return;
+      }
+      const matches = words.filter(w=>w.text.startsWith(raw));
+      highlightMatches(raw);
+      if(matches.length===0){
+        input.classList.add('invalid');
+      }else{
+        input.classList.remove('invalid');
+      }
+    }
+
+    function highlightMatches(prefix){
+      words.forEach(w=>{
+        const p = prefix? prefix.toLowerCase() : '';
+        const doneLen = p && w.text.startsWith(p) ? p.length : 0;
+        w.done = doneLen;
+        w.doneEl.textContent = w.text.slice(0, doneLen);
+        w.todoEl.textContent = w.text.slice(doneLen);
+      });
+    }
+
+    function commitBestMatch(){
+      const raw = input.value.trim().toLowerCase();
+      if(!raw) return;
+      const matches = words.filter(w=>w.text.startsWith(raw));
+      if(matches.length===0){
+        input.classList.add('invalid');
+        flashGame(); streak=0; updateHUD();
+        if(audioEnabled) sfxFail(); // quick negative feedback
+        return;
+      }
+      const center = game.clientWidth/2;
+      matches.sort((a,b)=> (b.y - a.y) || (Math.abs(a.x-center) - Math.abs(b.x-center)));
+      const best = matches[0];
+      if(best.text === raw){
+        removeWord(best, true);
+        input.value='';
+        highlightMatches('');
+      }else{
+        input.classList.remove('invalid');
+      }
+    }
+
+    function flashGame(){
+      game.classList.remove('flash');
+      void game.offsetWidth;
+      game.classList.add('flash');
+    }
+
+    /*** Loop ***/
+    function tick(ts){
+      if(!running || paused){ last=ts; raf=requestAnimationFrame(tick); return; }
+      if(!last) last=ts;
+      const dt = (ts - last)/1000;
+      last = ts;
+      spawnTimer += dt*1000;
+
+      if(spawnTimer >= spawnEvery){
+        spawnTimer = 0;
+        spawnWord();
+      }
+
+      const targetEvery = clamp(1100 - level*40, 550, 2000);
+      spawnEvery += (targetEvery - spawnEvery)*0.02;
+      baseSpeed += 0.02;
+      const targetLevel = 1 + Math.floor(score/120);
+      if(targetLevel!==level){ level=targetLevel; updateHUD(); }
+
+      for(let i=words.length-1;i>=0;i--){
+        const w = words[i];
+        w.y += w.speed*dt;
+        if(w.y >= groundY-2){
+          streak=0; updateHUD();
+          gameOver();
+          return;
+        }
+        w.node.style.transform=`translate(${w.x}px, ${w.y}px)`;
+      }
+
+      raf=requestAnimationFrame(tick);
+    }
+
+    function gameOver(){
+      running=false; paused=false; cancelAnimationFrame(raf);
+      const acc = total? Math.round((hits/total)*100) : 100;
+      summaryEl.textContent = `Score ${score} • Level ${level} • Accuracy ${acc}% • Best streak ${streak}`;
+      gameOverOverlay.classList.remove('hidden');
+      pauseBtn.disabled = true;
+      input.blur();
+      if(audioEnabled) sfxFail();
+    }
+
+    /*** Controls ***/
+    function startGame(){
+      reset();
+      running=true; paused=false; last=0;
+      startOverlay.classList.add('hidden');
+      gameOverOverlay.classList.add('hidden');
+      pauseOverlay.classList.add('hidden');
+      pauseBtn.disabled=false;
+      for(let i=0;i<2;i++) spawnWord();
+      input.focus();
+      raf=requestAnimationFrame(tick);
+      enableAudioIfNeeded(); // start bg loop after user action
+    }
+
+    function togglePause(force){
+      if(!running) return;
+      paused = (typeof force==='boolean') ? force : !paused;
+      if(paused){
+        pauseOverlay.classList.remove('hidden');
+        pauseBtn.textContent='Resume';
+        input.blur();
+        try{ sound.bg.pause(); }catch(e){}
+      }else{
+        pauseOverlay.classList.add('hidden');
+        pauseBtn.textContent='Pause';
+        input.focus();
+        if(audioEnabled){ try{ sound.bg.play(); }catch(e){} }
+      }
+    }
+
+    /*** Events ***/
+    window.addEventListener('resize', measureGround);
+    input.addEventListener('input', evaluateInput);
+    input.addEventListener('keydown', (e)=>{
+      if(e.key==='Enter'){ e.preventDefault(); commitBestMatch(); }
+    });
+    document.addEventListener('keydown',(e)=>{
+      if(e.key==='p' || e.key==='P'){ togglePause(); }
+    });
+
+    startBtn.addEventListener('click', startGame);
+    bigStart.addEventListener('click', startGame);
+    resumeBtn.addEventListener('click', ()=>togglePause(false));
+    pauseBtn.addEventListener('click', ()=>togglePause());
+    restartBtn.addEventListener('click', startGame);
+    muteBtn.addEventListener('click', muteToggle);
+
+    tweetBtn.addEventListener('click', ()=>{
+      const acc = total? Math.round((hits/total)*100) : 100;
+      const text = encodeURIComponent(`I scored ${score} (Lv ${level}, ${acc}% acc) on Type-to-Win!`);
+      const url = encodeURIComponent(location.href);
+      window.open(`https://twitter.com/intent/tweet?text=${text}&url=${url}`,'_blank');
+    });
+
+    game.addEventListener('pointerdown', ()=> running && !paused && input.focus(), true);
+
+    // Initialize
+    measureGround();
+  })();
+  </script>
+</body>
+</html>
